@@ -1717,6 +1717,7 @@ tailwind.config = {
   });
   let traveler = null;
   let travelerFrame = null;
+  let travelerTimeout = null;
 
   function pulseMarker(marker) {
     const el = marker.getElement();
@@ -1729,12 +1730,19 @@ tailwind.config = {
     setTimeout(function () { pin.classList.remove('map-pin-pulse'); }, 1500);
   }
 
+  function stopTravel() {
+    if (travelerFrame) cancelAnimationFrame(travelerFrame);
+    if (travelerTimeout) clearTimeout(travelerTimeout);
+    travelerFrame = null;
+    travelerTimeout = null;
+    if (traveler) { map.removeLayer(traveler); traveler = null; }
+  }
+
   function guideToRoute(index) {
     routeLines.forEach(function (line) {
       if (line) line.setStyle({ opacity: .35, weight: 1.6 });
     });
-    if (travelerFrame) cancelAnimationFrame(travelerFrame);
-    if (traveler) { map.removeLayer(traveler); traveler = null; }
+    stopTravel();
 
     const loc = locations[index];
     if (loc.hub) { pulseMarker(markers[index]); return; }
@@ -1745,28 +1753,32 @@ tailwind.config = {
     if (reduceMotion) { pulseMarker(markers[index]); return; }
 
     const start = BASE, end = loc.coords;
+    const duration = 1000 + Math.min(map.distance(start, end) / 900, 900);
     traveler = L.marker(start, { icon: travelIcon, interactive: false, zIndexOffset: 1000 }).addTo(map);
 
-    const duration = 1000 + Math.min(map.distance(start, end) / 900, 900);
-    const startTime = performance.now();
-
-    function frame(now) {
-      const t = Math.min((now - startTime) / duration, 1);
-      const ease = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      traveler.setLatLng([
-        start[0] + (end[0] - start[0]) * ease,
-        start[1] + (end[1] - start[1]) * ease
-      ]);
-      if (t < 1) {
-        travelerFrame = requestAnimationFrame(frame);
-      } else {
-        pulseMarker(markers[index]);
-        setTimeout(function () {
-          if (traveler) { map.removeLayer(traveler); traveler = null; }
-        }, 700);
+    /* Recorre la ruta una vez; se vuelve a llamar a sí misma para que el viaje sea infinito */
+    function runLap() {
+      const startTime = performance.now();
+      function frame(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const ease = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        traveler.setLatLng([
+          start[0] + (end[0] - start[0]) * ease,
+          start[1] + (end[1] - start[1]) * ease
+        ]);
+        if (t < 1) {
+          travelerFrame = requestAnimationFrame(frame);
+        } else {
+          pulseMarker(markers[index]);
+          travelerTimeout = setTimeout(function () {
+            traveler.setLatLng(start);
+            runLap();
+          }, 600);
+        }
       }
+      travelerFrame = requestAnimationFrame(frame);
     }
-    travelerFrame = requestAnimationFrame(frame);
+    runLap();
   }
 
   document.querySelectorAll('.region-item').forEach(function (item) {
