@@ -100,7 +100,6 @@ tailwind.config = {
   .btn-lg{padding:1.1rem 2.1rem;font-size:.95rem}
 
   /* ====== NAV ====== */
-  #progress-bar{transform-origin:0 50%;transform:scaleX(0);transition:transform .1s linear}
   .site-header{transition:padding .4s var(--ease), background-color .4s ease, box-shadow .4s ease, border-color .4s ease}
   .site-header.is-scrolled{box-shadow:0 12px 34px -22px rgba(0,0,0,.95)}
   .site-header.is-scrolled .brand-mark{transform:scale(.9)}
@@ -203,21 +202,25 @@ tailwind.config = {
   }
   /* sombra difusa de la pintura sobre el asfalto (da profundidad al trazo) */
   .road-line::before{
-    content:"";position:absolute;left:-2px;top:50%;width:calc(200% + 4px);height:5px;transform:translateY(-42%);
-    background:repeating-linear-gradient(90deg,rgba(0,0,0,.55) 0 2px,transparent 2px 24px,rgba(0,0,0,.55) 24px 26px,transparent 26px 50px);
+    content:"";position:absolute;left:0;top:50%;width:100%;height:5px;transform:translateY(-42%);
+    background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.55) 0 2px,transparent 2px 24px,rgba(0,0,0,.55) 24px 26px,transparent 26px 50px);
+    background-size:50px 100%;background-repeat:repeat-x;
     filter:blur(1.5px);animation:roadDash 2.4s linear infinite;
   }
   /* línea pintada con bordes gastados, no vectoriales */
   .road-line::after{
-    content:"";position:absolute;left:-2px;top:50%;width:calc(200% + 4px);height:2.5px;transform:translateY(-50%);
-    background:repeating-linear-gradient(90deg,
+    content:"";position:absolute;left:0;top:50%;width:100%;height:2.5px;transform:translateY(-50%);
+    background-image:repeating-linear-gradient(90deg,
       transparent 0,rgba(245,179,1,.15) 2px,var(--amber) 5px,var(--amber) 19px,rgba(245,179,1,.35) 22px,transparent 24px,
       transparent 50px);
+    background-size:50px 100%;background-repeat:repeat-x;
     filter:drop-shadow(0 0 3px rgba(245,179,1,.55));
     mix-blend-mode:screen;
     animation:roadDash 2.4s linear infinite;
   }
-  @keyframes roadDash{to{transform:translate(-25%,-50%)}}
+  /* Múltiplo exacto del patrón (50px): el bucle no deja costura ni corte visible,
+     sin importar el ancho real de la pantalla. */
+  @keyframes roadDash{to{background-position-x:-50px}}
 
   /* En escritorio la vía se ve más ancha: bajamos el ritmo para que no luzca acelerada */
   @media (min-width:1024px){
@@ -509,10 +512,6 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- Barra de progreso de lectura -->
-<div class="fixed top-0 left-0 w-full h-[3px] z-[60] bg-transparent">
-  <div id="progress-bar" class="h-full w-full bg-gradient-to-r from-brandRed to-brandRedLight"></div>
-</div>
 
 <!-- ================= HEADER ================= -->
 <header id="site-header" class="site-header fixed top-0 left-0 w-full z-50 border-b border-white/10 bg-brandDarker/80 backdrop-blur-xl">
@@ -1283,16 +1282,13 @@ tailwind.config = {
   /* ---------- Año del footer ---------- */
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  /* ---------- Header + barra de progreso ---------- */
+  /* ---------- Header ---------- */
   const header = document.getElementById('site-header');
-  const bar = document.getElementById('progress-bar');
   const toTop = document.getElementById('to-top');
 
   function onScroll() {
     const y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 20);
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
     toTop.classList.toggle('is-hidden', y < 600);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
