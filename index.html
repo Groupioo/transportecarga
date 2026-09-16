@@ -1424,13 +1424,21 @@ tailwind.config = {
     }
 
     function build() {
+      // Esta franja se mide reconstruyendo un "cartel" oculto y pidiéndole su ancho.
+      // Antes ese cartel se insertaba al final de <body> (después del footer) y
+      // luego se quitaba: durante esa fracción de segundo la página crecía un
+      // poco más abajo del footer, y si justo estabas ahí abajo, el navegador
+      // te reacomodaba de golpe. Ahora se mide dentro del propio contenedor de
+      // la cinta (que ya tiene overflow:hidden y position:relative), así nunca
+      // afecta el alto de la página ni el scroll.
+      const wrap = track.parentElement || track;
       const probe = document.createElement('span');
       probe.className = 'flex gap-8 pr-8';
-      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;';
+      probe.style.cssText = 'position:absolute;top:0;left:0;visibility:hidden;white-space:nowrap;';
       probe.innerHTML = unitMarkup();
-      document.body.appendChild(probe);
+      wrap.appendChild(probe);
       const unitWidth = probe.getBoundingClientRect().width || 420;
-      document.body.removeChild(probe);
+      wrap.removeChild(probe);
 
       const target = window.innerWidth + 500; // margen de seguridad
       const repeats = Math.max(2, Math.ceil(target / unitWidth));
@@ -1449,7 +1457,14 @@ tailwind.config = {
 
     build();
     let resizeTimer;
+    let lastWidth = window.innerWidth;
     window.addEventListener('resize', function () {
+      // En móvil, mostrar/ocultar la barra de direcciones dispara "resize"
+      // aunque el ancho no cambie. Reconstruir la cinta en ese momento es
+      // innecesario y es justo lo que causaba el salto del footer, así que
+      // solo reconstruimos si el ancho real de la pantalla cambió.
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(build, 300);
     });
