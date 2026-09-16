@@ -1332,30 +1332,40 @@ tailwind.config = {
   menuBtn.addEventListener('click', openMenu);
   closeBtn.addEventListener('click', closeMenu);
   overlay.addEventListener('click', closeMenu);
-  mobileLinks.forEach(function (l) {
-    l.addEventListener('click', function (e) {
-      const href = l.getAttribute('href') || '';
-      // Si es un enlace a una sección de la página, cerramos el menú primero
-      // y recién luego hacemos scroll. Hacerlo a la vez (como antes) generaba
-      // una "pelea" entre el cierre del menú y el salto de scroll: la página
-      // llegaba a la sección correcta y de inmediato volvía a la posición
-      // anterior, sintiéndose como un salto repentino hacia otra sección.
-      if (href.charAt(0) === '#' && href.length > 1) {
-        e.preventDefault();
-        const target = document.querySelector(href);
-        closeMenu();
-        if (target) {
-          setTimeout(function () {
-            target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-          }, 320);
-        }
-      } else {
-        closeMenu();
-      }
-    });
-  });
+  mobileLinks.forEach(function (l) { l.addEventListener('click', closeMenu); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && menu.classList.contains('is-open')) closeMenu();
+  });
+
+  /* ---------- Navegación interna sin ensuciar el historial ----------
+     Antes, cada enlace "#seccion" dejaba una entrada nueva en el
+     historial del navegador. Al tocar un enlace tel:/mailto:/WhatsApp
+     que el teléfono no podía abrir, Android a veces reacciona como si
+     se presionara "atrás", y eso hacía "reaparecer" una sección
+     visitada minutos antes (como Cotización) de la nada. Ahora
+     interceptamos estos enlaces: hacemos scroll a la sección y
+     actualizamos el hash de la URL sin agregar una entrada nueva al
+     historial, así no queda nada a lo que el navegador pueda "volver". */
+  document.addEventListener('click', function (e) {
+    const link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    const hash = link.getAttribute('href');
+    if (!hash || hash.length < 2) return; // ignora href="#" vacío
+    const target = document.querySelector(hash);
+    if (!target) return;
+    e.preventDefault();
+
+    function goThere() {
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      if (window.history && history.replaceState) history.replaceState(null, '', hash);
+    }
+
+    if (link.classList.contains('mobile-link') && menu.classList.contains('is-open')) {
+      closeMenu();
+      setTimeout(goThere, 320); // espera a que el menú termine de cerrarse
+    } else {
+      goThere();
+    }
   });
 
   /* ---------- Animaciones de entrada ---------- */
