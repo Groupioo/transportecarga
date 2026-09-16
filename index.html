@@ -13,11 +13,23 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://unpkg.com">
+<link rel="dns-prefetch" href="https://server.arcgisonline.com">
+
+<!-- Imagen del hero (LCP): se precarga para que aparezca de inmediato -->
+<link rel="preload" as="image" fetchpriority="high" href="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=70&w=1600&auto=format&fit=crop">
+
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<!-- Font Awesome: se carga sin bloquear el primer renderizado -->
+<link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+<!-- Leaflet (mapa) se carga bajo demanda cuando el usuario se acerca a "Cobertura", no aquí -->
 
 <script>
 tailwind.config = {
@@ -605,13 +617,13 @@ tailwind.config = {
 <section id="inicio" class="relative min-h-[92vh] flex items-center pt-[110px] pb-16 overflow-hidden">
   <div class="absolute inset-0 z-0" aria-hidden="true">
     <div class="hero-slide is-active absolute inset-0" data-slide="0">
-      <div class="hero-img absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1920&auto=format&fit=crop')"></div>
+      <div class="hero-img absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=70&w=1600&auto=format&fit=crop')"></div>
     </div>
     <div class="hero-slide absolute inset-0" data-slide="1">
-      <div class="hero-img absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=1920&auto=format&fit=crop')"></div>
+      <div class="hero-img absolute inset-0 bg-cover bg-center" data-bg="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=70&w=1600&auto=format&fit=crop"></div>
     </div>
     <div class="hero-slide absolute inset-0" data-slide="2">
-      <div class="hero-img absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop')"></div>
+      <div class="hero-img absolute inset-0 bg-cover bg-center" data-bg="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=70&w=1600&auto=format&fit=crop"></div>
     </div>
     <div class="absolute inset-0 bg-gradient-to-r from-brandDarker/85 via-brandDarker/45 to-brandDarker/10"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-brandDark/80 via-transparent to-transparent"></div>
@@ -708,7 +720,7 @@ tailwind.config = {
 
     <div data-reveal="left" class="lg:col-span-6">
       <div class="relative">
-        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=1000&auto=format&fit=crop" alt="Flota de camiones del operador logístico en ruta" class="w-full h-[430px] object-cover rounded-2xl border border-white/10">
+        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=65&w=900&auto=format&fit=crop" alt="Flota de camiones del operador logístico en ruta" class="w-full h-[430px] object-cover rounded-2xl border border-white/10" loading="lazy" decoding="async">
         <div class="absolute -bottom-6 -right-2 sm:right-6 bg-brandDarker border border-white/10 rounded-xl px-6 py-5 shadow-2xl shadow-black/70">
           <span class="block font-display text-4xl font-extrabold text-brandRedLight" data-count="12" data-suffix=" años">0</span>
           <span class="block text-xs text-slate-400 mt-1">Moviendo carga en el Perú</span>
@@ -770,7 +782,7 @@ tailwind.config = {
 
       <article data-reveal class="card flex flex-col">
         <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=700&auto=format&fit=crop" alt="Camión de carga general" class="card-img w-full h-full object-cover">
+          <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=65&w=600&auto=format&fit=crop" alt="Camión de carga general" class="card-img w-full h-full object-cover" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-t from-[#0a1124] via-[#0a1124]/20 to-transparent"></div>
         </div>
         <div class="p-6 flex-1 flex flex-col">
@@ -786,7 +798,7 @@ tailwind.config = {
 
       <article data-reveal style="--d:.08s" class="card flex flex-col">
         <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=700&auto=format&fit=crop" alt="Unidad de transporte refrigerado" class="card-img w-full h-full object-cover">
+          <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=65&w=600&auto=format&fit=crop" alt="Unidad de transporte refrigerado" class="card-img w-full h-full object-cover" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-t from-[#0a1124] via-[#0a1124]/20 to-transparent"></div>
         </div>
         <div class="p-6 flex-1 flex flex-col">
@@ -802,7 +814,7 @@ tailwind.config = {
 
       <article data-reveal style="--d:.16s" class="card flex flex-col">
         <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=700&auto=format&fit=crop" alt="Traslado de carga sobredimensionada" class="card-img w-full h-full object-cover">
+          <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=65&w=600&auto=format&fit=crop" alt="Traslado de carga sobredimensionada" class="card-img w-full h-full object-cover" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-t from-[#0a1124] via-[#0a1124]/20 to-transparent"></div>
         </div>
         <div class="p-6 flex-1 flex flex-col">
@@ -818,7 +830,7 @@ tailwind.config = {
 
       <article data-reveal class="card flex flex-col">
         <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=700&auto=format&fit=crop" alt="Centro de distribución logística" class="card-img w-full h-full object-cover">
+          <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=65&w=600&auto=format&fit=crop" alt="Centro de distribución logística" class="card-img w-full h-full object-cover" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-t from-[#0a1124] via-[#0a1124]/20 to-transparent"></div>
         </div>
         <div class="p-6 flex-1 flex flex-col">
@@ -834,7 +846,7 @@ tailwind.config = {
 
       <article data-reveal style="--d:.08s" class="card flex flex-col">
         <div class="h-44 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=700&auto=format&fit=crop" alt="Servicio de transporte express" class="card-img w-full h-full object-cover">
+          <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=65&w=600&auto=format&fit=crop" alt="Servicio de transporte express" class="card-img w-full h-full object-cover" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-t from-[#0a1124] via-[#0a1124]/20 to-transparent"></div>
         </div>
         <div class="p-6 flex-1 flex flex-col">
@@ -1239,7 +1251,6 @@ tailwind.config = {
   <i class="fa-solid fa-arrow-up text-sm"></i>
 </button>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 (function () {
   'use strict';
@@ -1587,7 +1598,8 @@ tailwind.config = {
     return msg;
   }, ['nombre', 'telefono', 'origen', 'destino']);
 
-  /* ---------- Mapa de cobertura ---------- */
+  /* ---------- Mapa de cobertura (carga diferida) ---------- */
+  function initCoverageMap() {
   const map = L.map('peru-map', {
     zoomControl: false,
     scrollWheelZoom: false,
@@ -1596,10 +1608,13 @@ tailwind.config = {
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    subdomains: 'abcd',
-    attribution: '&copy; OpenStreetMap &copy; CARTO'
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16,
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+  }).addTo(map);
+
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16
   }).addTo(map);
 
   map.on('click', function () { map.scrollWheelZoom.enable(); });
@@ -1795,6 +1810,44 @@ tailwind.config = {
       if (origen && !origen.value) origen.focus(); else if (document.getElementById('q-tel')) document.getElementById('q-tel').focus();
     });
   }
+  } /* fin initCoverageMap */
+
+  /* ---------- Carga diferida de Leaflet: solo cuando el usuario se acerca al mapa ---------- */
+  (function () {
+    const section = document.getElementById('cobertura');
+    if (!section) return;
+    let started = false;
+
+    function loadCoverageMap() {
+      if (started) return;
+      started = true;
+
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.onload = function () { initCoverageMap(); };
+      document.body.appendChild(script);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) { loadCoverageMap(); io.disconnect(); }
+        });
+      }, { rootMargin: '600px 0px' });
+      io.observe(section);
+    } else {
+      loadCoverageMap();
+    }
+  })();
 })();
 </script>
 </body>
