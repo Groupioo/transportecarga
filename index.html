@@ -663,8 +663,8 @@ tailwind.config = {
       </p>
 
       <h1 data-reveal style="--d:.08s" class="mt-5 text-[13vw] sm:text-7xl lg:text-[86px] font-extrabold uppercase leading-[.88] tracking-tight">
-        Transporte<br>de carga<br>
-        <span class="text-brandRed">por carretera</span>
+        Transporte<br><span class="text-brandRed">de carga</span><br>
+        <span class="text-white">por carretera</span>
       </h1>
 
       <p data-reveal style="--d:.16s" class="mt-6 max-w-lg text-[15px] leading-relaxed text-slate-300">
@@ -1642,6 +1642,61 @@ tailwind.config = {
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 16
   }).addTo(map);
+
+  /* ---------- Máscara: oculta países vecinos y dibuja los límites regionales del Perú ---------- */
+  (function () {
+    const PERU_GEOJSON_URL = 'https://raw.githubusercontent.com/juaneladio/peru-geojson/master/peru_departamental_simple.geojson';
+    const worldRing = [[-85, -200], [-85, 200], [85, 200], [85, -200]];
+
+    fetch(PERU_GEOJSON_URL)
+      .then(function (res) { return res.json(); })
+      .then(function (geo) {
+        let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+
+        function ringToLatLngs(ring) {
+          return ring.map(function (c) {
+            const lng = c[0], lat = c[1];
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lng < minLng) minLng = lng;
+            if (lng > maxLng) maxLng = lng;
+            return [lat, lng];
+          });
+        }
+
+        const holes = [];
+        geo.features.forEach(function (f) {
+          const g = f && f.geometry;
+          if (!g) return;
+          if (g.type === 'Polygon') {
+            holes.push(ringToLatLngs(g.coordinates[0]));
+          } else if (g.type === 'MultiPolygon') {
+            g.coordinates.forEach(function (poly) { holes.push(ringToLatLngs(poly[0])); });
+          }
+        });
+
+        if (!holes.length) return;
+
+        /* Capa oscura que cubre el resto del mundo, recortada con la silueta del Perú */
+        L.polygon([worldRing].concat(holes), {
+          stroke: false,
+          fillColor: '#0b1329',
+          fillOpacity: 1,
+          interactive: false
+        }).addTo(map);
+
+        /* Líneas sutiles marcando las regiones (departamentos) */
+        L.geoJSON(geo, {
+          style: { color: '#f5b301', weight: 1, opacity: .35, fillOpacity: 0 },
+          interactive: false
+        }).addTo(map);
+
+        /* Evita que el usuario haga pan hacia el vacío y revele demasiado espacio fuera del Perú */
+        const peruBounds = L.latLngBounds([minLat, minLng], [maxLat, maxLng]);
+        map.setMaxBounds(peruBounds.pad(0.35));
+      })
+      .catch(function () { /* si la máscara no carga, el mapa sigue funcionando con el mundo visible */ });
+  })();
 
   map.on('click', function () { map.scrollWheelZoom.enable(); });
   map.on('mouseout', function () { map.scrollWheelZoom.disable(); });
