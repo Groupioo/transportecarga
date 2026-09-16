@@ -49,6 +49,10 @@ tailwind.config = {
     --ease:cubic-bezier(.22,1,.36,1);
   }
   html{scroll-padding-top:96px;}
+  /* Evita que el navegador "corrija" el scroll solo cuando algo cambia de tamaño
+     más arriba (imágenes, contadores, tipografía web). En móvil esto se sentía
+     como un salto repentino hacia una sección anterior mientras se hacía scroll. */
+  html,body{overflow-anchor:none;}
   body{background:var(--dark);}
   ::selection{background:var(--red);color:#fff;}
 
@@ -59,6 +63,7 @@ tailwind.config = {
   ::-webkit-scrollbar-thumb:hover{background:var(--red)}
 
   h1,h2,h3,.font-display{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em;}
+  [data-count]{font-variant-numeric:tabular-nums}
 
   /* ====== SISTEMA DE BOTONES ====== */
   .btn{
