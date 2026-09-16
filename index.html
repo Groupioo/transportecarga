@@ -274,6 +274,32 @@ tailwind.config = {
   .route-path{stroke-dasharray:6 10;animation:dash 1.6s linear infinite}
   @keyframes dash{to{stroke-dashoffset:-32}}
 
+  /* Pulso de llegada al seleccionar una ciudad */
+  .map-pin-pulse::after{
+    content:"";position:absolute;inset:0;border-radius:50%;
+    border:2px solid var(--amber);
+    animation:arrivalPulse 1.5s ease-out 2;
+  }
+  @keyframes arrivalPulse{
+    0%{transform:scale(1);opacity:1}
+    100%{transform:scale(3.4);opacity:0}
+  }
+
+  /* Camión que recorre la ruta hacia la ciudad elegida */
+  .route-traveler{
+    width:24px;height:24px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--amber),var(--red));
+    color:#fff;font-size:11px;
+    box-shadow:0 0 0 5px rgba(245,179,1,.22),0 6px 14px -2px rgba(0,0,0,.6);
+    animation:travelerBounce .45s ease-in-out infinite alternate;
+  }
+  @keyframes travelerBounce{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-3px) rotate(2deg)}}
+  @media (prefers-reduced-motion: reduce){
+    .route-traveler{animation:none}
+    .map-pin-pulse::after{animation:none}
+  }
+
   .region-item{cursor:pointer;transition:transform .35s var(--ease),border-color .3s ease,background-color .3s ease}
   .region-item:hover,.region-item.is-active{transform:translateX(6px);border-color:rgba(220,38,38,.5);background:#101a35}
 
@@ -1656,14 +1682,18 @@ tailwind.config = {
   }
 
   const markers = [];
+  const routeLines = [];
   locations.forEach(function (loc) {
     if (!loc.hub) {
-      L.polyline([BASE, loc.coords], {
+      const line = L.polyline([BASE, loc.coords], {
         color: '#f5b301',
         weight: 1.6,
-        opacity: .5,
+        opacity: .45,
         className: reduceMotion ? '' : 'route-path'
       }).addTo(map);
+      routeLines.push(line);
+    } else {
+      routeLines.push(null);
     }
     const m = L.marker(loc.coords, { icon: pin(loc.hub), title: loc.name })
       .addTo(map)
@@ -1678,13 +1708,80 @@ tailwind.config = {
 
   map.fitBounds(L.latLngBounds(locations.map(function (l) { return l.coords; })).pad(0.18));
 
+  /* ---------- Animación guía: camión viajando por la ruta seleccionada ---------- */
+  const travelIcon = L.divIcon({
+    className: '',
+    html: '<div class="route-traveler"><i class="fa-solid fa-truck"></i></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+  let traveler = null;
+  let travelerFrame = null;
+
+  function pulseMarker(marker) {
+    const el = marker.getElement();
+    if (!el) return;
+    const pin = el.querySelector('.map-pin');
+    if (!pin) return;
+    pin.classList.remove('map-pin-pulse');
+    void pin.offsetWidth; /* reinicia la animación si ya estaba activa */
+    pin.classList.add('map-pin-pulse');
+    setTimeout(function () { pin.classList.remove('map-pin-pulse'); }, 1500);
+  }
+
+  function guideToRoute(index) {
+    routeLines.forEach(function (line) {
+      if (line) line.setStyle({ opacity: .35, weight: 1.6 });
+    });
+    if (travelerFrame) cancelAnimationFrame(travelerFrame);
+    if (traveler) { map.removeLayer(traveler); traveler = null; }
+
+    const loc = locations[index];
+    if (loc.hub) { pulseMarker(markers[index]); return; }
+
+    const line = routeLines[index];
+    if (line) { line.setStyle({ opacity: .95, weight: 3 }); line.bringToFront(); }
+
+    if (reduceMotion) { pulseMarker(markers[index]); return; }
+
+    const start = BASE, end = loc.coords;
+    traveler = L.marker(start, { icon: travelIcon, interactive: false, zIndexOffset: 1000 }).addTo(map);
+
+    const duration = 1000 + Math.min(map.distance(start, end) / 900, 900);
+    const startTime = performance.now();
+
+    function frame(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      const ease = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      traveler.setLatLng([
+        start[0] + (end[0] - start[0]) * ease,
+        start[1] + (end[1] - start[1]) * ease
+      ]);
+      if (t < 1) {
+        travelerFrame = requestAnimationFrame(frame);
+      } else {
+        pulseMarker(markers[index]);
+        setTimeout(function () {
+          if (traveler) { map.removeLayer(traveler); traveler = null; }
+        }, 700);
+      }
+    }
+    travelerFrame = requestAnimationFrame(frame);
+  }
+
   document.querySelectorAll('.region-item').forEach(function (item) {
     item.addEventListener('click', function () {
       document.querySelectorAll('.region-item').forEach(function (i) { i.classList.remove('is-active'); });
       item.classList.add('is-active');
       const i = parseInt(item.dataset.city, 10);
-      map.flyTo(locations[i].coords, 7, { duration: reduceMotion ? 0 : 1.1 });
+      const loc = locations[i];
+      if (loc.hub) {
+        map.flyTo(loc.coords, 7, { duration: reduceMotion ? 0 : 1.1 });
+      } else {
+        map.flyToBounds([BASE, loc.coords], { paddingTopLeft: [40, 40], paddingBottomRight: [40, 40], maxZoom: 7, duration: reduceMotion ? 0 : 1.1 });
+      }
       markers[i].openPopup();
+      guideToRoute(i);
       hideCityPanels();
     });
   });
@@ -1719,8 +1816,13 @@ tailwind.config = {
     resultEta.innerHTML = '<i class="fa-regular fa-clock mr-1"></i>' + (loc.hub ? 'Base de operaciones' : loc.eta);
     resultBox.classList.remove('hidden');
     noResultBox.classList.add('hidden');
-    map.flyTo(loc.coords, 7, { duration: reduceMotion ? 0 : 1.1 });
+    if (loc.hub) {
+      map.flyTo(loc.coords, 7, { duration: reduceMotion ? 0 : 1.1 });
+    } else {
+      map.flyToBounds([BASE, loc.coords], { paddingTopLeft: [40, 40], paddingBottomRight: [40, 40], maxZoom: 7, duration: reduceMotion ? 0 : 1.1 });
+    }
     markers[index].openPopup();
+    guideToRoute(index);
     document.querySelectorAll('.region-item').forEach(function (i) { i.classList.remove('is-active'); });
   }
 
