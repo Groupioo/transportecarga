@@ -987,7 +987,7 @@ tailwind.config = {
     <div data-reveal="left" class="lg:col-span-5">
       <h2 class="text-4xl lg:text-5xl font-extrabold uppercase leading-[.95]">Cobertura<br>nacional</h2>
       <p class="mt-5 text-[15px] text-slate-300 leading-relaxed">
-        Operamos desde Lima hacia las principales ciudades del país. Busca tu ciudad de destino y descubre en cuánto tiempo llega tu pedido.
+        Enviamos a todo el Perú: las 24 regiones y la provincia constitucional del Callao. Busca tu ciudad de destino y descubre en cuánto tiempo llega tu pedido.
       </p>
 
       <!-- Buscador de tiempo de entrega -->
@@ -1486,7 +1486,7 @@ tailwind.config = {
     if (!track) return;
     const halfA = track.querySelector('[data-half="a"]');
     const halfB = track.querySelector('[data-half="b"]');
-    const cities = ['Lima', 'Chiclayo', 'Piura', 'Trujillo', 'Arequipa', 'Huancayo', 'Cusco', 'Tacna'];
+    const cities = ['Lima', 'Callao', 'Chiclayo', 'Piura', 'Trujillo', 'Arequipa', 'Huancayo', 'Cusco', 'Tacna', 'Iquitos', 'Puerto Maldonado', 'Tumbes'];
     const SECONDS_PER_UNIT = 32;
 
     function unitMarkup() {
@@ -1665,7 +1665,16 @@ tailwind.config = {
     { name: 'Puno', coords: [-15.8402, -70.0219], desc: 'Destino altiplano sur.', eta: 'Tránsito estimado: 22 h' },
     { name: 'Ayacucho', coords: [-13.1588, -74.2239], desc: 'Conexión con la sierra sur.', eta: 'Tránsito estimado: 12 h' },
     { name: 'Pucallpa', coords: [-8.3791, -74.5539], desc: 'Terminal de distribución selva central.', eta: 'Tránsito estimado: 20 h' },
-    { name: 'Tarapoto', coords: [-6.4894, -76.3735], desc: 'Terminal de distribución selva norte.', eta: 'Tránsito estimado: 24 h' }
+    { name: 'Tarapoto', coords: [-6.4894, -76.3735], desc: 'Terminal de distribución selva norte.', eta: 'Tránsito estimado: 24 h' },
+    { name: 'Callao', coords: [-12.0566, -77.1181], desc: 'Zona portuaria, parte del área metropolitana de Lima.', eta: 'Tránsito estimado: 1 h' },
+    { name: 'Huaraz', coords: [-9.5277, -77.5278], desc: 'Terminal de distribución sierra norte.', eta: 'Tránsito estimado: 8 h' },
+    { name: 'Huancavelica', coords: [-12.7864, -74.9776], desc: 'Conexión con la sierra central.', eta: 'Tránsito estimado: 10 h' },
+    { name: 'Cerro de Pasco', coords: [-10.6863, -76.2611], desc: 'Terminal de distribución sierra central.', eta: 'Tránsito estimado: 8 h' },
+    { name: 'Abancay', coords: [-13.6339, -72.8814], desc: 'Conexión con la sierra sur.', eta: 'Tránsito estimado: 20 h' },
+    { name: 'Chachapoyas', coords: [-6.2298, -77.8283], desc: 'Terminal de distribución nor-oriente.', eta: 'Tránsito estimado: 20 h' },
+    { name: 'Moquegua', coords: [-17.1938, -70.9347], desc: 'Terminal de distribución sur.', eta: 'Tránsito estimado: 20 h' },
+    { name: 'Puerto Maldonado', coords: [-12.5933, -69.1891], desc: 'Destino sur oriente, vía Cusco.', eta: 'Tránsito estimado: 30 h' },
+    { name: 'Iquitos', coords: [-3.7437, -73.2516], desc: 'Sin conexión directa por carretera: servicio combinado aéreo/fluvial.', eta: 'Coordinar tiempos con un asesor', noRoad: true }
   ];
 
   function pin(isHub) {
@@ -1684,7 +1693,7 @@ tailwind.config = {
   const markers = [];
   const routeLines = [];
   locations.forEach(function (loc) {
-    if (!loc.hub) {
+    if (!loc.hub && !loc.noRoad) {
       const line = L.polyline([BASE, loc.coords], {
         color: '#f5b301',
         weight: 1.6,
@@ -1745,7 +1754,7 @@ tailwind.config = {
     stopTravel();
 
     const loc = locations[index];
-    if (loc.hub) { pulseMarker(markers[index]); return; }
+    if (loc.hub || loc.noRoad) { pulseMarker(markers[index]); return; }
 
     const line = routeLines[index];
     if (line) { line.setStyle({ opacity: .95, weight: 3 }); line.bringToFront(); }
